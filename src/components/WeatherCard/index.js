@@ -3,42 +3,26 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { ReactComponent as WeatherOverlay } from "../../assets/imgs/WeatherOverlay.svg";
 import WeatherAnimation from "../../assets/libs/WeatherAnimation";
+import WeatherPanel from "../WeatherPanel";
 import * as weatherType from "../../constants/weatherType";
 import * as actWeather from "../../store/actions/weather";
-import "./style.scss";
+import { jsUcfirst, getIconWeather } from "../../commons/Helper";
+import PropTypes from "prop-types";
+import "./style.css";
 
-const dateBuilder = (d) => {
-  let months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "April",
-    "May",
-    "June",
-    "July",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  let days = ["Sun", "Mon", "Tue", "Wed", "Thus", "Fri", "Sat"];
-
-  let day = days[d.getDay()];
-  let date = d.getDate();
-  let month = months[d.getMonth()];
-  let year = d.getFullYear();
-
-  return `${day} ${date} ${month} ${year}`;
-};
-
-class WeatherCart extends Component {
+class WeatherCard extends Component {
   componentDidUpdate() {
     var { weather } = this.props;
     var weatherCode = weatherType.WEATHER_CODE[weather.main];
     if (weatherCode) {
-      WeatherAnimation(weatherCode);
+      // this.weatherAni.makeWeather("thunder");
+      this.weatherAni.makeWeather(weatherCode);
     }
+  }
+  componentDidMount() {
+    var { weather } = this.props;
+    var weatherCode = weatherType.WEATHER_CODE[weather.main];
+    this.weatherAni = WeatherAnimation(weatherCode);
   }
 
   render() {
@@ -63,14 +47,22 @@ class WeatherCart extends Component {
             <g id="cloud1" className="cloud"></g>
           </svg>
           <div className="details">
-            <div className="temp">
-              {weather.temp.temp}
-              <span>c</span>
+            <div className="left">
+              <div className="temp">
+                {parseInt(weather.temp)}
+                <span>&ordm;</span>
+              </div>
             </div>
             <div className="right">
-              <div id="date">{dateBuilder(new Date())}</div>
-              <div id="summary">{weather.main}</div>
+              {/* <div id="date">{dateBuilder(new Date())}</div> */}
+              <div className="icon">
+                <img alt="weather-icon" src={getIconWeather(weather.icon)} />
+              </div>
+              <div id="summary">{jsUcfirst(weather.description)}</div>
             </div>
+          </div>
+          <div className="bottom">
+            <WeatherPanel></WeatherPanel>
           </div>
         </div>
         <svg id="outer"></svg>
@@ -78,6 +70,12 @@ class WeatherCart extends Component {
     );
   }
 }
+
+WeatherCard.propsTypes = {
+  description: PropTypes.string,
+  temp: PropTypes.number,
+  icon: PropTypes.string,
+};
 
 var mapStateToProps = (state) => {
   return {
@@ -91,4 +89,4 @@ var mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(WeatherCart);
+export default connect(mapStateToProps, mapDispatchToProps)(WeatherCard);

@@ -19,16 +19,21 @@ class AxiosService {
   get(url) {
     return this.instance.get(url);
   }
-  add(url,data) {
-    return this.instance.post(url,data);
+
+  post(url, data) {
+    return this.instance.post(url, data);
+  }
+
+  add(url, data) {
+    return this.instance.post(url, data);
   }
 
   delete(url) {
     return this.instance.delete(url);
   }
 
-  update(url,data){
-    return this.instance.put(url,data)
+  update(url, data) {
+    return this.instance.put(url, data);
   }
 }
 

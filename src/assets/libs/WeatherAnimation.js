@@ -1,4 +1,4 @@
-const WeatherAnimation = (weatherType) => {
+const WeatherAnimation = (weatherType = "sun") => {
   window.requestAnimFrame =
     window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -34,6 +34,8 @@ const WeatherAnimation = (weatherType) => {
   var outerSplashHolder = outerSVG.group();
   var outerLeafHolder = outerSVG.group();
   var outerSnowHolder = outerSVG.group();
+
+  var lightningTimeout;
   // Set mask for leaf holder
 
   outerLeafHolder.attr({
@@ -158,7 +160,7 @@ const WeatherAnimation = (weatherType) => {
     }
 
     for (var i = 0; i < clouds.length; i++) {
-      if (weatherType  == "sun") {
+      if (weatherType === "sun") {
         if (clouds[i].offset > -(sizes.card.width * 1.5))
           clouds[i].offset += settings.windSpeed / (i + 1);
         if (clouds[i].offset > sizes.card.width * 2.5)
@@ -492,14 +494,19 @@ const WeatherAnimation = (weatherType) => {
     }
   }
 
+  function reset() {
+    container.removeClass("rain wind clouds thunder sun");
+  }
+
   function makeWeather(weather) {
     if (weather.data) weather = weather.data;
+    reset();
     weatherType = weather;
 
     TweenMax.killTweensOf(summary);
     TweenMax.to(summary, 1, {
       opacity: 1,
-      x: -30,
+      x: 0,
       ease: Power4.easeIn,
     });
 
@@ -585,12 +592,12 @@ const WeatherAnimation = (weatherType) => {
           y: sizes.card.height / 2,
           ease: Power2.easeInOut,
         });
-        TweenMax.to(sunburst.node, 4, {
-          scale: 1,
-          opacity: 0.8,
-          y: sizes.card.height / 2 + sizes.card.offset.top,
-          ease: Power2.easeInOut,
-        });
+        // TweenMax.to(sunburst.node, 4, {
+        //   scale: 1,
+        //   opacity: 0.8,
+        //   y: sizes.card.height / 2 + sizes.card.offset.top,
+        //   ease: Power2.easeInOut,
+        // });
         break;
       default:
         TweenMax.to(sun.node, 2, {
@@ -608,5 +615,48 @@ const WeatherAnimation = (weatherType) => {
         break;
     }
   }
+
+  function startLightningTimer() {
+    if (lightningTimeout) clearTimeout(lightningTimeout);
+    if (weatherType === "thunder") {
+      lightningTimeout = setTimeout(lightning, Math.random() * 6000);
+    }
+  }
+
+  function lightning() {
+    startLightningTimer();
+    TweenMax.fromTo(card, 0.75, { y: -30 }, { y: 0, ease: window.Elastic.easeOut });
+
+    var pathX = 30 + Math.random() * (sizes.card.width - 60);
+    var yOffset = 20;
+    var steps = 20;
+    var points = [pathX + ",0"];
+    for (var i = 0; i < steps; i++) {
+      var x = pathX + (Math.random() * yOffset - yOffset / 2);
+      var y = (sizes.card.height / steps) * (i + 1);
+      points.push(x + "," + y);
+    }
+
+    var strike = weatherContainer1.path("M" + points.join(" ")).attr({
+      fill: "none",
+      stroke: "white",
+      strokeWidth: 2 + Math.random(),
+    });
+
+    TweenMax.to(strike.node, 1, {
+      opacity: 0,
+      ease: Power4.easeOut,
+      onComplete: function () {
+        strike.remove();
+        strike = null;
+      },
+    });
+  }
+
+  startLightningTimer();
+  
+  return {
+    makeWeather,
+  };
 };
 export default WeatherAnimation;
